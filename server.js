@@ -13,6 +13,7 @@ const app = express();
 connectDB();
 
 const allowed = [
+    'http://localhost:4200',
 'https://www.simanics.com',
   'https://simanics.com',          // ✅ add root domain
   'https://simanics-frontend.vercel.app' // ✅ allow vercel too
