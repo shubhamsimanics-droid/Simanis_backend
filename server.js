@@ -14,7 +14,7 @@ connectDB();
 
 const allowed = [
   'http://localhost:4200',
-  'https://your-domain.com'
+  'https://www.simanics.com/'
 ];
 
 app.use(cors({
