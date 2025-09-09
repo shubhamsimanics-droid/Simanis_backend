@@ -48,3 +48,53 @@ exports.getEnquiries = async (req, res) => {
   const enquiries = await Enquiry.find().populate('product');
   res.json(enquiries);
 };
+
+const ALLOWED_STATUSES = new Set(['new', 'in_progress', 'closed']);
+
+exports.updateEnquiry = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, isRead } = req.body;
+
+    const update = {};
+
+    if (typeof status !== 'undefined') {
+      if (!ALLOWED_STATUSES.has(status)) {
+        return res.status(400).json({ message: 'Invalid status' });
+      }
+      update.status = status;
+    }
+
+    if (typeof isRead !== 'undefined') {
+      // handle "true"/"false" strings from forms
+      update.isRead = typeof isRead === 'string' ? isRead === 'true' : !!isRead;
+    }
+
+    if (Object.keys(update).length === 0) {
+      return res.status(400).json({ message: 'Nothing to update' });
+    }
+
+    const doc = await Enquiry.findByIdAndUpdate(id, update, { new: true })
+      .populate('product');
+
+    if (!doc) return res.status(404).json({ message: 'Enquiry not found' });
+
+    return res.json(doc);
+  } catch (err) {
+    console.error('updateEnquiry error:', err);
+    return res.status(400).json({ message: err.message || 'Failed to update enquiry' });
+  }
+};
+
+exports.deleteEnquiry = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const doc = await Enquiry.findByIdAndDelete(id);
+    if (!doc) return res.status(404).json({ message: 'Enquiry not found' });
+    // No content needed for deletes
+    return res.status(204).send();
+  } catch (err) {
+    console.error('deleteEnquiry error:', err);
+    return res.status(400).json({ message: err.message || 'Failed to delete enquiry' });
+  }
+};

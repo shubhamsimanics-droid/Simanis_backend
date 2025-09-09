@@ -8,13 +8,14 @@ const productRoutes = require("./routes/productRoutes");
 const enquiryRoutes = require("./routes/enquiryRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const uploadRoutes = require("./routes/uploadroutes");
+const complaintRoutes = require("./routes/complaintRoutes");
 
 const app = express();
 connectDB();
 
 const allowed = [
-    'http://localhost:4200',
-'https://www.simanics.com',
+  'http://localhost:4200',
+  'https://www.simanics.com',
   'https://simanics.com',          // ✅ add root domain
   'https://simanics-frontend.vercel.app' // ✅ allow vercel too
 ];
@@ -32,6 +33,7 @@ app.use(express.json());
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/enquiries", enquiryRoutes);
+app.use("/api/complaints", complaintRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/uploads", uploadRoutes);
 

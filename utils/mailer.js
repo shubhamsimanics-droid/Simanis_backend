@@ -2,17 +2,27 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,                   // e.g. smtp.gmail.com, smtp.zoho.in, smtp.office365.com
+  host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT || 587),
-  secure: process.env.SMTP_SECURE === 'true',    // true for 465, false for 587/25
+  secure: process.env.SMTP_SECURE === 'true',
   auth: {
-    user: process.env.SMTP_USER,                 // full mailbox (e.g. your@domain.com)
-    pass: process.env.SMTP_PASS,                 // app password or SMTP password
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
 });
 
-async function sendEnquiryEmail({ to, fromEmail, fromName, message, product }) {
-  const subject = `New enquiry${product?.name ? ` • ${product.name}` : ''} from ${fromName}`;
+async function sendEnquiryEmail({ 
+  to, 
+  fromEmail, 
+  fromName, 
+  message, 
+  product, 
+  subject: customSubject,   // <-- allow custom subject (for complaints)
+  attachments = []          // <-- allow optional attachments
+}) {
+  const subject = customSubject 
+    || `New enquiry${product?.name ? ` • ${product.name}` : ''} from ${fromName}`;
+
   const text = [
     `Name: ${fromName}`,
     `Email: ${fromEmail}`,
@@ -24,7 +34,7 @@ async function sendEnquiryEmail({ to, fromEmail, fromName, message, product }) {
 
   const html = `
     <div style="font:14px/1.5 -apple-system,Segoe UI,Roboto,Arial;">
-      <h2 style="margin:0 0 8px;">New enquiry received</h2>
+      <h2 style="margin:0 0 8px;">${escapeHtml(customSubject || 'New enquiry received')}</h2>
       <p style="margin:0 0 8px;"><strong>Name:</strong> ${escapeHtml(fromName)}</p>
       <p style="margin:0 0 8px;"><strong>Email:</strong> <a href="mailto:${escapeHtml(fromEmail)}">${escapeHtml(fromEmail)}</a></p>
       ${product?.name ? `<p style="margin:0 0 8px;"><strong>Product:</strong> ${escapeHtml(product.name)}</p>` : ''}
@@ -35,11 +45,12 @@ async function sendEnquiryEmail({ to, fromEmail, fromName, message, product }) {
 
   return transporter.sendMail({
     from: `"${process.env.MAIL_FROM_NAME || 'Simanics Website'}" <${process.env.MAIL_FROM || process.env.SMTP_USER}>`,
-    to,                          // your inbox
-    replyTo: fromEmail,          // so you can reply directly to the user
+    to,
+    replyTo: fromEmail,
     subject,
     text,
     html,
+    attachments,   // <-- images / files will be attached if provided
   });
 }
 
